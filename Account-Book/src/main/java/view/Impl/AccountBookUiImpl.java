@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.List;
 
 public class AccountBookUiImpl {
-    //WARNING WARNING WARNING WARNING WARNING 此处CSV文件地址需调整为你的CSV文件所在的绝对地址
+    // WARNING WARNING WARNING WARNING WARNING 此处CSV文件地址需调整为你的CSV文件所在的绝对地址
     private static final String CSV_FILE = "D:\\StudySoftware\\java practice\\Integration\\Account-Book\\src\\main\\java\\org\\example\\finance_data.csv";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     private JPanel contentPanel;
