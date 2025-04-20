@@ -1,98 +1,99 @@
 package view.Impl;
 
-import controller.Impl.*;
+import controller.Impl.SettingControllerImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
+import java.io.File;
 
-/**
- * 视图类：设置面板UI，
- * 实现文件存储路径显示、选择、保存
- */
-public class SettingUiImpl extends JPanel {
-    private JPanel contentPanel;
+public class SettingUiImpl {
+
+    private final JPanel contentPanel;
     private JTextField pathField;
-    private JButton browseButton;
+    private JButton chooseButton;
     private JButton saveButton;
 
-    private SettingControllerImpl controller;
-
-    public SettingUiImpl(JPanel contentPanel){
+    public SettingUiImpl(JPanel contentPanel) {
         this.contentPanel = contentPanel;
-        this.controller = new SettingControllerImpl();
     }
 
-    public void SettingWindow(){
+    public void SettingWindow() {
+        // 清空原本的内容
         contentPanel.removeAll();
-        contentPanel.setLayout(new BorderLayout(10, 10));
+        contentPanel.setLayout(new BorderLayout());
 
-        pathField = new JTextField(controller.getCurrentCsvPath());
+        // 创建主设置面板
+        JPanel settingPanel = createMainSettingPanel();
+
+        // 添加到 contentPanel 中
+        contentPanel.add(settingPanel, BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+
+        // 设置按钮事件监听
+        setupButtonListeners();
+    }
+
+    private JPanel createMainSettingPanel() {
+        JPanel settingPanel = new JPanel(new BorderLayout());
+        settingPanel.setBorder(BorderFactory.createEmptyBorder(4, 2, 5, 5));
+
+        // 添加文件路径设置组件
+        settingPanel.add(createFilePathPanel(), BorderLayout.NORTH);
+
+        // 这里可以添加其他设置面板
+        // settingPanel.add(createOtherSettingsPanel(), BorderLayout.CENTER);
+
+        // 添加保存按钮
+        settingPanel.add(createSaveButtonPanel(), BorderLayout.SOUTH);
+
+        return settingPanel;
+    }
+
+    private JPanel createFilePathPanel() {
+        JPanel pathPanel = new JPanel(new BorderLayout());
+        pathField = new JTextField(SettingControllerImpl.getFinanceFilePath());
         pathField.setEditable(false);
+        chooseButton = new JButton("选择新路径");
 
-        browseButton = new JButton("浏览...");
-        saveButton = new JButton("保存路径");
+        pathPanel.add(new JLabel("当前路径: "), BorderLayout.WEST);
+        pathPanel.add(pathField, BorderLayout.CENTER);
+        pathPanel.add(chooseButton, BorderLayout.EAST);
 
-        JPanel centerPanel = new JPanel(new BorderLayout(5, 5));
-        centerPanel.add(pathField, BorderLayout.CENTER);
-        centerPanel.add(browseButton, BorderLayout.EAST);
-
-        add(new JLabel("当前CSV路径:"), BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(saveButton, BorderLayout.SOUTH);
-
-        browseButton.addActionListener(e -> chooseFile());
-        saveButton.addActionListener(e -> savePath());
+        return pathPanel;
     }
 
-//    public SettingUiImpl() {
-//        controller = new SettingControllerImpl();
-//
-//        setLayout(new BorderLayout(10, 10));
-//
-//        pathField = new JTextField(controller.getCurrentCsvPath());
-//        pathField.setEditable(false);
-//
-//        browseButton = new JButton("浏览...");
-//        saveButton = new JButton("保存路径");
-//
-//        JPanel centerPanel = new JPanel(new BorderLayout(5, 5));
-//        centerPanel.add(pathField, BorderLayout.CENTER);
-//        centerPanel.add(browseButton, BorderLayout.EAST);
-//
-//        add(new JLabel("当前CSV路径:"), BorderLayout.NORTH);
-//        add(centerPanel, BorderLayout.CENTER);
-//        add(saveButton, BorderLayout.SOUTH);
-//
-//        browseButton.addActionListener(e -> chooseFile());
-//        saveButton.addActionListener(e -> savePath());
-//    }
-
-    private void chooseFile() {
-        JFileChooser chooser = new JFileChooser();
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            pathField.setText(chooser.getSelectedFile().getPath());
-        }
+    private JPanel createSaveButtonPanel() {
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        saveButton = new JButton("保存设置");
+        bottomPanel.add(saveButton);
+        return bottomPanel;
     }
 
-    private void savePath() {
-        String newPath = pathField.getText();
-        try {
-            controller.updateCsvPath(newPath);
+    private void setupButtonListeners() {
+        // 选择路径按钮逻辑
+        chooseButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("选择新的 finance_data.csv 文件位置");
+            fileChooser.setSelectedFile(new File("finance_data.csv"));
 
-            // 新增：路径保存成功后，立刻刷新 Import 模块（如果已加载）
-            JOptionPane.showMessageDialog(this, "路径保存成功，已立刻生效！");
+            int result = fileChooser.showSaveDialog(contentPanel);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                pathField.setText(selectedFile.getAbsolutePath());
+            }
+        });
 
-            /*
-            1.将之前的csv文件与新建的csv文件合并
-            2.（现在的记录显示是直接从文件读取，还是存到类中）
-                重新加载现在的csv
-             */
-            //notifyImportModule();
-
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "保存失败: " + ex.getMessage());
-        }
+        // 保存按钮逻辑
+        saveButton.addActionListener(e -> {
+            String newPath = pathField.getText();
+            boolean success = SettingControllerImpl.setFinanceFilePath(newPath);
+            if (success) {
+                JOptionPane.showMessageDialog(contentPanel, "路径保存成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(contentPanel, "路径保存失败（可能是相同路径或权限问题）", "失败", JOptionPane.ERROR_MESSAGE);
+                pathField.setText(SettingControllerImpl.getFinanceFilePath());
+            }
+        });
     }
-
 }

@@ -3,7 +3,6 @@ package controller.Impl;
 import model.CSVImporter;
 import model.Entry;
 import test.DeepseekTestClassify;
-import util.ConfigLoader;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,7 +12,7 @@ import java.util.List;
 
 public class ImportControllerImpl {
     //要修改文件->resources->config.properties :: csv.file.path=*******
-    private static final String CSV_FILE = ConfigLoader.get("csv.file.path");
+    private static final String CSV_FILE = SettingControllerImpl.getFinanceFilePath();
 
     public List<Entry> loadEntries() {
         List<Entry> entries = new ArrayList<>();
