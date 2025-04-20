@@ -2,7 +2,11 @@ package view.Impl;
 
 import controller.Impl.AccountBookControllerImpl;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.io.IOException;
@@ -212,22 +216,141 @@ public class AccountBookUiImpl {
     }
 
     private JPanel createDatePanel(Date date, List<AccountBookControllerImpl.Record> records) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createTitledBorder(controller.formatDate(date)));
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
 
+        // ================= 动态尺寸计算 =================
+        int rowHeight = 28; // 行高（根据字体大小可调节）
+        int headerHeight = 30; // 表头高度
+        int maxVisibleRows = 8; // 最大可见行数
+
+        // 动态计算理想高度
+        int idealHeight = headerHeight + (Math.min(records.size(), maxVisibleRows) * rowHeight);
+        int minHeight = 80; // 最小面板高度
+
+        // ================= 智能表格创建 =================
+        JTable table = createSmartTable(records);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        // 滚动条策略配置（根据行数动态调整）
+        if (records.size() > maxVisibleRows) {
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            idealHeight = headerHeight + (maxVisibleRows * rowHeight) + 5; // 包含滚动条补偿
+        } else {
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        }
+
+        // ================= 布局优化 =================
+        scrollPane.setPreferredSize(new Dimension(scrollPane.getWidth(), Math.max(idealHeight, minHeight)));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // ================= 智能边框 =================
+        String title = String.format("%s (%d 条)", controller.formatDate(date), records.size());
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                title,
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("微软雅黑", Font.BOLD, 12),
+                new Color(100, 100, 100)
+        ));
+
+        // ================= 总计显示优化 =================
+        JLabel totalLabel = createTotalLabel(records);
+        panel.add(totalLabel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private JTable createSmartTable(List<AccountBookControllerImpl.Record> records) {
+        DefaultTableModel model = new DefaultTableModel(
+                new Object[]{"金额 (Amount)", "分类 (Category)", "描述 (Description)"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(model);
+        table.setAutoCreateRowSorter(true);
+
+        // ================= 列宽自适应配置 =================
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // 关闭自动调整
+        TableColumnModel colModel = table.getColumnModel();
+
+        // 金额列（固定宽度）
+        TableColumn amountCol = colModel.getColumn(0);
+        amountCol.setPreferredWidth(90);
+        amountCol.setMaxWidth(120);
+
+        // 分类列（弹性宽度）
+        TableColumn categoryCol = colModel.getColumn(1);
+        categoryCol.setPreferredWidth(120);
+        categoryCol.setMinWidth(100);
+
+        // 描述列（最大弹性宽度）
+        TableColumn descCol = colModel.getColumn(2);
+        descCol.setPreferredWidth(300);
+        descCol.setMinWidth(150);
+
+        // ================= 视觉优化 =================
+        table.setRowHeight(28);
+        table.setShowVerticalLines(true);
+        table.setGridColor(new Color(220, 220, 220));
+        table.getTableHeader().setBackground(new Color(245, 245, 245));
+
+        DefaultTableCellRenderer wrapRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
+                textArea.setLineWrap(true);
+                textArea.setWrapStyleWord(true); // 按单词换行
+                textArea.setFont(table.getFont());
+                textArea.setBorder(UIManager.getBorder("Table.cellBorder"));
+
+                // 动态计算最佳高度
+                int width = table.getColumnModel().getColumn(column).getWidth();
+                textArea.setSize(new Dimension(width, Integer.MAX_VALUE));
+                int preferredHeight = textArea.getPreferredSize().height + 4; // 加边距
+
+                // 设置行高（但不超过120px）
+                if (table.getRowHeight(row) != Math.min(preferredHeight, 120)) {
+                    table.setRowHeight(row, Math.min(preferredHeight, 120));
+                }
+                return textArea;
+            }
+        };
+        // 应用渲染器到描述列
+        descCol.setCellRenderer(wrapRenderer);
+
+        // ================= 调整自动调整策略 =================
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // 启用自动调整
+        table.doLayout(); // 立即应用布局
+
+        // 数据填充
+        records.forEach(r -> model.addRow(new Object[]{
+                String.format("¥%.2f", r.amount()),
+                r.category(),
+                r.description()
+        }));
+
+        return table;
+
+    }
+
+    private JLabel createTotalLabel(List<AccountBookControllerImpl.Record> records) {
         double total = records.stream()
                 .mapToDouble(AccountBookControllerImpl.Record::amount)
                 .sum();
-        panel.add(new JLabel(String.format("总计：¥%.2f", total)));
 
-        DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"金额", "分类", "描述"}, 0);
-        records.forEach(r -> model.addRow(
-                new Object[]{r.amount(), r.category(), r.description()}));
-        panel.add(new JScrollPane(new JTable(model)));
-
-        return panel;
+        JLabel label = new JLabel("当日总计: " + String.format("¥%.2f", total));
+        label.setHorizontalAlignment(SwingConstants.RIGHT);
+        label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(3, 5, 3, 10)
+        ));
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
+        return label;
     }
 
     private void showError(String message) {
