@@ -1,13 +1,14 @@
 package view.Impl;
 
+import controller.Impl.AccountBookControllerImpl;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DateFormatter;
 import java.awt.*;
-import controller.Impl.AccountBookControllerImpl;
-
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,10 @@ public class AccountBookUiImpl {
     private JScrollPane resultScrollPane;
     private JPanel resultPanel;
     private AccountBookControllerImpl controller;
+
+    // ⚡ 声明为成员变量
+    private JFormattedTextField startDateField;
+    private JFormattedTextField endDateField;
 
     public AccountBookUiImpl(JPanel contentPanel) {
         this.contentPanel = contentPanel;
@@ -32,17 +37,23 @@ public class AccountBookUiImpl {
 
         contentPanel.add(controlPanel, BorderLayout.NORTH);
         contentPanel.add(resultScrollPane, BorderLayout.CENTER);
+
+        // ⚡ 调整初始化顺序
+        autoLoadInitialData();
         contentPanel.revalidate();
     }
 
-    // 控制面板构建
     private JPanel createControlPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        JFormattedTextField startDateField = createDateField(150);
-        JFormattedTextField endDateField = createDateField(150);
+        // ⚡ 使用带默认值的创建方法
+        startDateField = createDateFieldWithDefault(150,
+                controller.getDefaultDateRange()[0]);
+        endDateField = createDateFieldWithDefault(150,
+                controller.getDefaultDateRange()[1]);
+
         JButton searchButton = new JButton("Search");
 
         addComponent(panel, new JLabel("Start Date:"), gbc, 0, 0);
@@ -52,26 +63,92 @@ public class AccountBookUiImpl {
         addComponent(panel, searchButton, gbc, 4, 0);
 
         searchButton.addActionListener(e -> handleSearch(
-                startDateField.getText(),
-                endDateField.getText()
+                startDateField.getText().trim(),
+                endDateField.getText().trim()
         ));
 
         return panel;
     }
 
-    // 结果面板初始化
+    // ⚡ 增强的日期输入框创建
+    private JFormattedTextField createDateFieldWithDefault(int width, String defaultValue) {
+        JFormattedTextField field = new JFormattedTextField(
+                new SafeDateFormatter(controller.getDateFormat()));
+
+        configureTextField(field, width);
+        try {
+            field.setValue(controller.getDateFormat().parse(defaultValue));
+        } catch (ParseException e) {
+            field.setValue(new Date());
+        }
+        return field;
+    }
+
+    private static class SafeDateFormatter extends DateFormatter {
+        public SafeDateFormatter(SimpleDateFormat format) {
+            super(format);
+        }
+
+        @Override
+        public String valueToString(Object value) throws ParseException {
+            if (value == null) {
+                return this.getFormat().format(new Date());
+            }
+            if (!(value instanceof Date)) {
+                throw new ParseException("Invalid date type: " +
+                        value.getClass().getName(), 0);
+            }
+            return super.valueToString(value);
+        }
+    }
+
+    private void autoLoadInitialData() {
+        try {
+            // ⚡ 空值安全处理
+            Date startDate = Optional.ofNullable(controller.getFirstDayOfMonth())
+                    .orElse(new Date());
+            Date endDate = new Date();
+
+            startDateField.setValue(startDate);
+            endDateField.setValue(endDate);
+
+            handleSearch(
+                    controller.formatDate(startDate),
+                    controller.formatDate(endDate)
+            );
+        } catch (IllegalArgumentException e) {
+            showError("自动加载失败: " + e.getMessage());
+        }
+    }
+
+    private void handleSearch(String startInput, String endInput) {
+        try {
+            if (startInput.isEmpty() || endInput.isEmpty()) {
+                throw new ParseException("日期不能为空", 0);
+            }
+
+            Map<Date, List<AccountBookControllerImpl.Record>> filteredData =
+                    controller.searchRecords(startInput, endInput);
+            updateResultPanel(filteredData);
+        } catch (IOException ex) {
+            showError("<html><b>文件读取失败：</b>" + ex.getMessage()
+                    + "<br>请检查文件路径：</html>");
+        } catch (RuntimeException ex) { // 捕获新增的运行时异常
+            showError("<html><b>数据解析错误：</b>"
+                    + ex.getCause().getMessage() + "</html>");
+        } catch (Exception ex) {
+            showError("<html><b>搜索错误：</b>"
+                    + ex.getMessage().replace("\n", "<br>") + "</html>");
+        }
+    }
+
+
+    // 其余保持不变的方法
     private void initializeResultPanel() {
         resultPanel = new JPanel();
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         resultScrollPane = new JScrollPane(resultPanel);
         resultScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-    }
-
-    // 日期输入框构建
-    private JFormattedTextField createDateField(int width) {
-        JFormattedTextField field = new JFormattedTextField(controller.getDateFormat());
-        configureTextField(field, width);
-        return field;
     }
 
     private void configureTextField(JFormattedTextField field, int width) {
@@ -81,32 +158,20 @@ public class AccountBookUiImpl {
         field.setToolTipText("<html>格式：<b>YYYY-MM-DD</b><br>示例：2025-04-18</html>");
     }
 
-    private void addComponent(JPanel panel, Component comp, GridBagConstraints gbc, int x, int y) {
+    private void addComponent(JPanel panel, Component comp,
+                              GridBagConstraints gbc, int x, int y) {
         gbc.gridx = x;
         gbc.gridy = y;
         panel.add(comp, gbc);
     }
 
-    // 核心业务调用
-    private void handleSearch(String startInput, String endInput) {
-        try {
-            Map<Date, List<AccountBookControllerImpl.Record>> filteredData =
-                    controller.searchRecords(startInput, endInput);
-            updateResultPanel(filteredData);
-        } catch (ParseException ex) {
-            showError("日期格式错误：" + ex.getMessage());
-        } catch (IllegalArgumentException | IOException ex) {
-            showError(ex.getMessage());
-        }
-    }
-
-    // 结果展示
     private void updateResultPanel(Map<Date, List<AccountBookControllerImpl.Record>> data) {
         resultPanel.removeAll();
         if (data.isEmpty()) {
             resultPanel.add(new JLabel("未找到相关记录"));
         } else {
-            data.forEach((date, records) -> resultPanel.add(createDatePanel(date, records)));
+            data.forEach((date, records) ->
+                    resultPanel.add(createDatePanel(date, records)));
         }
         resultPanel.revalidate();
         resultScrollPane.repaint();
@@ -122,22 +187,21 @@ public class AccountBookUiImpl {
                 .sum();
         panel.add(new JLabel(String.format("总计：¥%.2f", total)));
 
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"金额", "分类", "描述"}, 0);
-        records.forEach(r -> model.addRow(new Object[]{r.amount(), r.category(), r.description()}));
+        DefaultTableModel model = new DefaultTableModel(
+                new Object[]{"金额", "分类", "描述"}, 0);
+        records.forEach(r -> model.addRow(
+                new Object[]{r.amount(), r.category(), r.description()}));
         panel.add(new JScrollPane(new JTable(model)));
 
         return panel;
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(contentPanel,
-                "<html><b>错误：</b>" + message + "</html>",
-                "系统提示",
-                JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(contentPanel, message,
+                "系统提示", JOptionPane.ERROR_MESSAGE);
     }
 
     private void initializeDateFormat() {
-        // 从Controller获取日期格式配置
         controller.initializeDateFormat();
     }
 }
