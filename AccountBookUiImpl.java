@@ -7,7 +7,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.io.IOException;
 import java.text.ParseException;
@@ -15,19 +14,19 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class AccountBookUiImpl {
     private JPanel contentPanel;
     private JScrollPane resultScrollPane;
     private JPanel resultPanel;
     private AccountBookControllerImpl controller;
-    // 添加总额显示面板
     private JPanel totalPanel;
     private JLabel totalLabel;
 
-    // ⚡ 声明为成员变量
-    private JFormattedTextField startDateField;
-    private JFormattedTextField endDateField;
+    // 日期选择组件
+    private JComboBox<Integer> startYearCombo, startMonthCombo, startDayCombo;
+    private JComboBox<Integer> endYearCombo, endMonthCombo, endDayCombo;
 
     public AccountBookUiImpl(JPanel contentPanel) {
         this.contentPanel = contentPanel;
@@ -45,7 +44,6 @@ public class AccountBookUiImpl {
         contentPanel.add(controlPanel, BorderLayout.NORTH);
         contentPanel.add(resultScrollPane, BorderLayout.CENTER);
 
-        // ⚡ 调整初始化顺序
         autoLoadInitialData();
         contentPanel.revalidate();
     }
@@ -55,23 +53,19 @@ public class AccountBookUiImpl {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // ⚡ 使用带默认值的创建方法
-        startDateField = createDateFieldWithDefault(150,
-                controller.getDefaultDateRange()[0]);
-        endDateField = createDateFieldWithDefault(150,
-                controller.getDefaultDateRange()[1]);
-
+        JPanel startDatePanel = createDateSelectorPanel(true);
+        JPanel endDatePanel = createDateSelectorPanel(false);
         JButton searchButton = new JButton("Search");
 
-        addComponent(panel, new JLabel("Start Date:"), gbc, 0, 0);
-        addComponent(panel, startDateField, gbc, 1, 0);
-        addComponent(panel, new JLabel("End Date:"), gbc, 2, 0);
-        addComponent(panel, endDateField, gbc, 3, 0);
+        addComponent(panel, new JLabel("开始日期："), gbc, 0, 0);
+        addComponent(panel, startDatePanel, gbc, 1, 0);
+        addComponent(panel, new JLabel("结束日期："), gbc, 2, 0);
+        addComponent(panel, endDatePanel, gbc, 3, 0);
         addComponent(panel, searchButton, gbc, 4, 0);
 
         searchButton.addActionListener(e -> handleSearch(
-                startDateField.getText().trim(),
-                endDateField.getText().trim()
+                getSelectedDate(true),
+                getSelectedDate(false)
         ));
 
         totalPanel = new JPanel();
@@ -86,57 +80,124 @@ public class AccountBookUiImpl {
         return containerPanel;
     }
 
-    // ⚡ 增强的日期输入框创建
-    private JFormattedTextField createDateFieldWithDefault(int width, String defaultValue) {
-        JFormattedTextField field = new JFormattedTextField(
-                new SafeDateFormatter(controller.getDateFormat()));
+    private JPanel createDateSelectorPanel(boolean isStartDate) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
-        configureTextField(field, width);
-        try {
-            field.setValue(controller.getDateFormat().parse(defaultValue));
-        } catch (ParseException e) {
-            field.setValue(new Date());
+        // 年份选择（当前年前后各5年）
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        JComboBox<Integer> yearCombo = new JComboBox<>(
+                IntStream.range(currentYear - 5, currentYear + 6)
+                        .boxed().toArray(Integer[]::new));
+
+        // 月份选择
+        JComboBox<Integer> monthCombo = new JComboBox<>(
+                IntStream.rangeClosed(1, 12).boxed().toArray(Integer[]::new));
+
+        // 日期选择（动态生成）
+        JComboBox<Integer> dayCombo = new JComboBox<>();
+
+        // 设置初始值
+        Calendar cal = Calendar.getInstance();
+        yearCombo.setSelectedItem(cal.get(Calendar.YEAR));
+        monthCombo.setSelectedItem(cal.get(Calendar.MONTH) + 1);
+        updateDayCombo(dayCombo, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+        dayCombo.setSelectedItem(cal.get(Calendar.DAY_OF_MONTH));
+
+        // 添加联动监听
+        yearCombo.addActionListener(e -> updateDayCombo(dayCombo,
+                (Integer)yearCombo.getSelectedItem(),
+                (Integer)monthCombo.getSelectedItem()));
+
+        monthCombo.addActionListener(e -> updateDayCombo(dayCombo,
+                (Integer)yearCombo.getSelectedItem(),
+                (Integer)monthCombo.getSelectedItem()));
+
+        // 保存组件引用
+        if(isStartDate) {
+            startYearCombo = yearCombo;
+            startMonthCombo = monthCombo;
+            startDayCombo = dayCombo;
+        } else {
+            endYearCombo = yearCombo;
+            endMonthCombo = monthCombo;
+            endDayCombo = dayCombo;
         }
-        return field;
+
+        panel.add(yearCombo);
+        panel.add(new JLabel("年"));
+        panel.add(monthCombo);
+        panel.add(new JLabel("月"));
+        panel.add(dayCombo);
+        panel.add(new JLabel("日"));
+
+        return panel;
     }
 
-    private static class SafeDateFormatter extends DateFormatter {
-        public SafeDateFormatter(SimpleDateFormat format) {
-            super(format);
-        }
+    private void updateDayCombo(JComboBox<Integer> dayCombo, int year, int month) {
+        dayCombo.removeAllItems();
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1);
+        cal.set(Calendar.DATE, 1);
 
-        @Override
-        public String valueToString(Object value) throws ParseException {
-            if (value == null) {
-                return this.getFormat().format(new Date());
-            }
-            if (!(value instanceof Date)) {
-                throw new ParseException("Invalid date type: " +
-                        value.getClass().getName(), 0);
-            }
-            return super.valueToString(value);
-        }
+        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        IntStream.rangeClosed(1, maxDay).forEach(dayCombo::addItem);
+    }
+
+    private String getSelectedDate(boolean isStart) {
+        int year = isStart ? (Integer)startYearCombo.getSelectedItem()
+                : (Integer)endYearCombo.getSelectedItem();
+        int month = isStart ? (Integer)startMonthCombo.getSelectedItem()
+                : (Integer)endMonthCombo.getSelectedItem();
+        int day = isStart ? (Integer)startDayCombo.getSelectedItem()
+                : (Integer)endDayCombo.getSelectedItem();
+
+        return String.format("%04d-%02d-%02d", year, month, day);
     }
 
     private void autoLoadInitialData() {
         try {
-            // ⚡ 空值安全处理
-            Date startDate = Optional.ofNullable(controller.getFirstDayOfMonth())
-                    .orElse(new Date());
-            Date endDate = new Date();
+            // 设置开始日期为当月第一天
+            Calendar firstCal = Calendar.getInstance();
+            firstCal.set(Calendar.DAY_OF_MONTH, 1);
+            setDateComponents(startYearCombo, startMonthCombo, startDayCombo, firstCal.getTime());
 
-            startDateField.setValue(startDate);
-            endDateField.setValue(endDate);
+            // 设置结束日期为当天
+            setDateComponents(endYearCombo, endMonthCombo, endDayCombo, new Date());
 
-            handleSearch(
-                    controller.formatDate(startDate),
-                    controller.formatDate(endDate)
-            );
-        } catch (IllegalArgumentException e) {
+            handleSearch(getSelectedDate(true), getSelectedDate(false));
+        } catch (Exception e) {
             showError("自动加载失败: " + e.getMessage());
         }
     }
 
+    private void setDateComponents(JComboBox<Integer> yearCombo,
+                                   JComboBox<Integer> monthCombo,
+                                   JComboBox<Integer> dayCombo,
+                                   Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        yearCombo.setSelectedItem(cal.get(Calendar.YEAR));
+        monthCombo.setSelectedItem(cal.get(Calendar.MONTH) + 1);
+        updateDayCombo(dayCombo, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+        dayCombo.setSelectedItem(cal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    // 以下方法保持原有实现不变
+    private void initializeResultPanel() {
+        resultPanel = new JPanel();
+        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
+        resultScrollPane = new JScrollPane(resultPanel);
+        resultScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    }
+
+    private void addComponent(JPanel panel, Component comp,
+                              GridBagConstraints gbc, int x, int y) {
+        gbc.gridx = x;
+        gbc.gridy = y;
+        panel.add(comp, gbc);
+    }
     private void handleSearch(String startInput, String endInput) {
         try {
             if (startInput.isEmpty() || endInput.isEmpty()) {
@@ -157,30 +218,6 @@ public class AccountBookUiImpl {
                     + ex.getMessage().replace("\n", "<br>") + "</html>");
         }
     }
-
-
-    // 其余保持不变的方法
-    private void initializeResultPanel() {
-        resultPanel = new JPanel();
-        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
-        resultScrollPane = new JScrollPane(resultPanel);
-        resultScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-    }
-
-    private void configureTextField(JFormattedTextField field, int width) {
-        field.setColumns(10);
-        field.setPreferredSize(new Dimension(width, 30));
-        field.setHorizontalAlignment(JTextField.CENTER);
-        field.setToolTipText("<html>格式：<b>YYYY-MM-DD</b><br>示例：2025-04-18</html>");
-    }
-
-    private void addComponent(JPanel panel, Component comp,
-                              GridBagConstraints gbc, int x, int y) {
-        gbc.gridx = x;
-        gbc.gridy = y;
-        panel.add(comp, gbc);
-    }
-
     private void updateResultPanel(Map<Date, List<AccountBookControllerImpl.Record>> data) {
         resultPanel.removeAll();
         if (data.isEmpty()) {
@@ -200,21 +237,6 @@ public class AccountBookUiImpl {
         resultPanel.revalidate();
         resultScrollPane.repaint();
     }
-
-    // 添加总额更新方法
-    private void updateTotalDisplay(double total) {
-        String formattedTotal = String.format("¥%.2f", total);
-        String htmlText = "<html><b style='color:#D32F2F; font-size:14px;'>"
-                + "消费总额：</b><span style='font-size:16px;'>%s</span></html>";
-        totalLabel.setText(String.format(htmlText, formattedTotal));
-
-        // 添加动态效果
-        totalPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(224, 224, 224)),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-    }
-
     private JPanel createDatePanel(Date date, List<AccountBookControllerImpl.Record> records) {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
 
@@ -338,6 +360,28 @@ public class AccountBookUiImpl {
 
     }
 
+    /**
+     * 更新总额显示面板（新增）
+     * @param total 计算得到的总金额
+     */
+    private void updateTotalDisplay(double total) {
+        String formattedTotal = String.format("¥%.2f", total);
+        String htmlText = "<html><b style='color:#D32F2F; font-size:14px;'>"
+                + "消费总额：</b><span style='font-size:16px;'>%s</span></html>";
+        totalLabel.setText(String.format(htmlText, formattedTotal));
+
+        // 添加动态边框效果
+        totalPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(224, 224, 224)),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+    }
+
+    /**
+     * 创建当日总计标签（新增）
+     * @param records 当日记录列表
+     * @return 带样式的JLabel组件
+     */
     private JLabel createTotalLabel(List<AccountBookControllerImpl.Record> records) {
         double total = records.stream()
                 .mapToDouble(AccountBookControllerImpl.Record::amount)
@@ -352,6 +396,7 @@ public class AccountBookUiImpl {
         label.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
         return label;
     }
+
 
     private void showError(String message) {
         JOptionPane.showMessageDialog(contentPanel, message,
