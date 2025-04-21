@@ -33,7 +33,7 @@ public class ReportFormsUiImpl implements ReportFormsUi {
 
     public void ReportFormsWindow() {
         try {
-            // 读取 CSV 文件数据
+            // 读取 CSV 文件数据，这里记得改自己电脑的绝对路径
             List<Record> records = readCSV("D:\\mycode\\Software-project\\Account-Book\\src\\main\\resources\\finance_data.csv");
 
             // 按日期分组数据
