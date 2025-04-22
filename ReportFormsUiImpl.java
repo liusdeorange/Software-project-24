@@ -4,6 +4,8 @@ import view.ReportFormsUi;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
@@ -13,6 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,7 +37,7 @@ public class ReportFormsUiImpl implements ReportFormsUi {
     public void ReportFormsWindow() {
         try {
             // 读取 CSV 文件数据，这里记得改自己电脑的绝对路径
-            List<Record> records = readCSV("D:\\mycode\\Software-project\\Account-Book\\src\\main\\resources\\finance_data.csv");
+            List<Record> records = readCSV("Account-Book/src/main/resources/finance_data.csv");
 
             // 按日期分组数据
             Map<Date, List<Record>> recordsByDate = groupRecordsByDate(records);
@@ -48,6 +51,11 @@ public class ReportFormsUiImpl implements ReportFormsUi {
             JFreeChart barChart = createBarChart(barDataset);
             JFreeChart lineChart = createLineChart(lineDataset);
             JFreeChart pieChart = createPieChart(pieDataset);
+
+            // 设置饼图标签显示百分比
+            PiePlot plot = (PiePlot) pieChart.getPlot();
+            plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {2}",
+                    NumberFormat.getNumberInstance(), NumberFormat.getPercentInstance()));
 
             // 创建图表面板
             ChartPanel barChartPanel = new ChartPanel(barChart);
