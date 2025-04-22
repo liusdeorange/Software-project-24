@@ -14,10 +14,12 @@ public class BaseUiImpl implements BaseUi {
     private JPanel sidebar;
     private JPanel contentPanel;
     private final Map<String, Runnable> viewMap = new HashMap<>();
+    private Object currentView; // 新增成员变量
+    private final Map<String, Object> viewCache = new HashMap<>(); // 视图缓存
 
     public void BaseWindow() {
         JFrame frame = new JFrame("AccountBook");
-        frame.setSize(800, 600);
+        frame.setSize(900, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -85,7 +87,12 @@ public class BaseUiImpl implements BaseUi {
             reportUi.ReportFormsWindow();
         });
         viewMap.put("Import", () -> {
-            ImportUiImpl importUi = new ImportUiImpl(contentPanel);
+            // 使用 computeIfAbsent 保证单例
+            ImportUiImpl importUi = (ImportUiImpl) viewCache.computeIfAbsent(
+                    "Import",
+                    k -> new ImportUiImpl(contentPanel)
+            );
+            this.currentView = importUi; // 更新当前视图
             importUi.ImportWindow();
         });
         viewMap.put("Setting", () -> {
@@ -104,6 +111,10 @@ public class BaseUiImpl implements BaseUi {
         @Override
         public void actionPerformed(ActionEvent e) {
             contentPanel.removeAll();
+
+            if(currentView instanceof ImportUiImpl) {
+                ((ImportUiImpl)currentView).autoSave();
+            }
 
             Runnable viewFunc = viewMap.get(buttonLabel);
             if (viewFunc != null) {
