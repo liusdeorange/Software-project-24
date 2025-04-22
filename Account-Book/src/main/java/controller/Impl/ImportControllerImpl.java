@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ImportControllerImpl {
     //要修改文件->resources->config.properties :: csv.file.path=*******
-    private static final String CSV_FILE = "D:\\StudySoftware\\java practice\\MSS\\Account-Book\\src\\main\\resources\\finance_data.csv";
+    private static final String CSV_FILE = SettingControllerImpl.getFinanceFilePath();
 
     public List<Entry> loadEntries() {
         List<Entry> entries = new ArrayList<>();
