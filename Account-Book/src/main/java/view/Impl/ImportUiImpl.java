@@ -25,16 +25,27 @@ public class ImportUiImpl implements ImportUi {
     }
 
     private void initializeModel() {
-        model = new DefaultTableModel() {
-            @Override
-            public Class<?> getColumnClass(int column) {
-                return column == 1 ? Double.class : String.class;
+        if (sharedModel == null) {
+            sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
+                @Override
+                public Class<?> getColumnClass(int column) {
+                    return column == 1 ? Double.class : String.class;
+                }
+            };
+
+            // 添加空行保护逻辑
+            List<Entry> initialData = controller.loadEntries();
+            if (!initialData.isEmpty()) {
+                for (Entry e : initialData) {
+                    sharedModel.addRow(new Object[]{e.getDate(), e.getAmount(),
+                            e.getCategory(), e.getDescription()});
+                }
+            } else {
+                // 添加默认空行防止异常
+                sharedModel.addRow(new Object[]{"", "", "", ""});
             }
-        };
-        model.addColumn("Date");
-        model.addColumn("Amount");
-        model.addColumn("Category");
-        model.addColumn("Description");
+        }
+        this.model = sharedModel;
     }
 
     @Override
@@ -45,6 +56,19 @@ public class ImportUiImpl implements ImportUi {
         table = new JTable(model);
         table.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(table);
+
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1
+                    && model.getRowCount() > 0) {
+                int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
+                if (model.getValueAt(modelRow, 0) != null) {
+                    dateField.setText(model.getValueAt(modelRow, 0).toString());
+                    amountField.setText(model.getValueAt(modelRow, 1).toString());
+                    categoryField.setText(model.getValueAt(modelRow, 2).toString());
+                    descriptionField.setText(model.getValueAt(modelRow, 3).toString());
+                }
+            }
+        });
 
         JPanel inputPanel = new JPanel(new GridLayout(4, 2, 5, 5));
         dateField = new JTextField();
@@ -72,12 +96,29 @@ public class ImportUiImpl implements ImportUi {
         contentPanel.add(scrollPane, BorderLayout.CENTER);
         contentPanel.add(inputPanel, BorderLayout.NORTH);
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
 
-        List<Entry> initialData = controller.loadEntries();
-        for (Entry e : initialData) {
-            model.addRow(new Object[]{e.getDate(), e.getAmount(), e.getCategory(), e.getDescription()});
+    // ImportUiImpl.java
+    public void autoSave() {
+        // 增加有效性检查
+        if (model.getRowCount() > 0 && hasValidData()) {
+            controller.rewriteCSV(model);
         }
     }
+
+    private boolean hasValidData() {
+        for (int i = 0; i < model.getRowCount(); i++) {
+            Object date = model.getValueAt(i, 0);
+            Object amount = model.getValueAt(i, 1);
+            if (date != null && !date.toString().isEmpty()
+                    && amount != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     private ActionListener createActionListener(String label) {
         return e -> {
@@ -140,6 +181,8 @@ public class ImportUiImpl implements ImportUi {
             JOptionPane.showMessageDialog(contentPanel, "请先选择要删除的行");
         }
     }
+
+    private static DefaultTableModel sharedModel;
 
     private void clearFields() {
         dateField.setText("");
