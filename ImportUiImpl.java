@@ -26,22 +26,23 @@ public class ImportUiImpl implements ImportUi {
 
     private void initializeModel() {
         if (sharedModel == null) {
-            sharedModel = new DefaultTableModel() {
+            sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
                 @Override
                 public Class<?> getColumnClass(int column) {
                     return column == 1 ? Double.class : String.class;
                 }
             };
-            sharedModel.addColumn("Date");
-            sharedModel.addColumn("Amount");
-            sharedModel.addColumn("Category");
-            sharedModel.addColumn("Description");
 
-            // ✅ 立即加载初始数据
+            // ✅ 添加空行保护逻辑
             List<Entry> initialData = controller.loadEntries();
-            for (Entry e : initialData) {
-                sharedModel.addRow(new Object[]{e.getDate(), e.getAmount(),
-                        e.getCategory(), e.getDescription()});
+            if (!initialData.isEmpty()) {
+                for (Entry e : initialData) {
+                    sharedModel.addRow(new Object[]{e.getDate(), e.getAmount(),
+                            e.getCategory(), e.getDescription()});
+                }
+            } else {
+                // ✅ 添加默认空行防止异常
+                sharedModel.addRow(new Object[]{"", "", "", ""});
             }
         }
         this.model = sharedModel;
@@ -57,12 +58,15 @@ public class ImportUiImpl implements ImportUi {
         JScrollPane scrollPane = new JScrollPane(table);
 
         table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
+            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1
+                    && model.getRowCount() > 0) {
                 int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
-                dateField.setText(model.getValueAt(modelRow, 0).toString());
-                amountField.setText(model.getValueAt(modelRow, 1).toString());
-                categoryField.setText(model.getValueAt(modelRow, 2).toString());
-                descriptionField.setText(model.getValueAt(modelRow, 3).toString());
+                if (model.getValueAt(modelRow, 0) != null) {
+                    dateField.setText(model.getValueAt(modelRow, 0).toString());
+                    amountField.setText(model.getValueAt(modelRow, 1).toString());
+                    categoryField.setText(model.getValueAt(modelRow, 2).toString());
+                    descriptionField.setText(model.getValueAt(modelRow, 3).toString());
+                }
             }
         });
 
