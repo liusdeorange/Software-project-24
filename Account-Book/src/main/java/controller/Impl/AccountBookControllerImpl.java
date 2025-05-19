@@ -117,8 +117,8 @@ public class AccountBookControllerImpl {
     public record Record(Date date, double amount, String category, String description) {}
 
     // CSV数据处理工具类
-    static class CSVUtils {
-        static List<Record> readCSV(String path) throws IOException {
+    public static class CSVUtils {
+        public static List<Record> readCSV(String path) throws IOException {
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                 return br.lines()
                         .map(String::trim)

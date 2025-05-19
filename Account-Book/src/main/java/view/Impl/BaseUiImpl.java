@@ -186,6 +186,7 @@ public class BaseUiImpl implements BaseUi {
         contentPanel.repaint();
     }
 
+    //侧边栏
     private void createSidebar() {
         sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
@@ -223,6 +224,19 @@ public class BaseUiImpl implements BaseUi {
 
         // 添加垂直胶水填充底部空间
         sidebar.add(Box.createVerticalGlue());
+
+        // 添加登出按钮
+        JButton logoutButton = new JButton("登出");
+        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logoutButton.setPreferredSize(buttonSize);
+        logoutButton.setMaximumSize(buttonSize);
+        logoutButton.setMinimumSize(buttonSize);
+        logoutButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        logoutButton.setVerticalTextPosition(SwingConstants.CENTER);
+        logoutButton.setBackground(Color.PINK);
+        logoutButton.addActionListener(new SidebarButtonListener("Logout")); // 使用统一监听器
+
+        sidebar.add(logoutButton);
     }
 
     private void initViewMap() {
@@ -241,7 +255,7 @@ public class BaseUiImpl implements BaseUi {
                 showLoginView();
                 return;
             }
-            ReportFormsUiImpl reportUi = new ReportFormsUiImpl(contentPanel);
+            ReportFormsUiImpl reportUi = new ReportFormsUiImpl(contentPanel,userController);
             reportUi.ReportFormsWindow();
         });
         viewMap.put("Import", () -> {
@@ -261,6 +275,16 @@ public class BaseUiImpl implements BaseUi {
             }
             SettingUiImpl settingUi = new SettingUiImpl(contentPanel);
             settingUi.SettingWindow();
+        });
+        viewMap.put("Logout", () -> {
+            if (userController.isLoggedIn()) {
+                userController.logout();
+                userStatusLabel.setText("未登录");
+                JOptionPane.showMessageDialog(frame, "已成功登出", "登出", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame, "当前未登录", "提示", JOptionPane.WARNING_MESSAGE);
+            }
+            showLoginView(); // 无论是否已登录，点击登出都回到登录界面
         });
     }
 

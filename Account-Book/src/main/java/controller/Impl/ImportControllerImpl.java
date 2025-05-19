@@ -2,8 +2,7 @@ package controller.Impl;
 
 import model.CSVImporter;
 import model.Entry;
-import controller.DeepseekClassify;
-import controller.Impl.UserControllerImpl;
+import util.DeepseekClassify;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -99,7 +98,8 @@ public class ImportControllerImpl {
             @Override
             protected Void doInBackground() {
                 try {
-                    DeepseekClassify ai = new DeepseekClassify();
+                    updateCsvFilePath();
+                    DeepseekClassify ai = new DeepseekClassify(userController);
                     for (int i = 0; i < model.getRowCount(); i++) {
                         String desc = (String) model.getValueAt(i, 3);
                         String category = ai.classifyDescription(desc);

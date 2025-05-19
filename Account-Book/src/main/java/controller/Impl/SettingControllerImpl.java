@@ -119,10 +119,19 @@ public class SettingControllerImpl implements SettingController {
         return currentFinanceFileDirectory;
     }
 
-    // 创建用户财务文件（由UserControllerImpl调用）
+    // 创建用户财务文件
     public static void createUserFinanceFile(String username) throws showException {
         String filePath = getFinanceFilePath(username);
         File file = new File(filePath);
+
+        // 创建父目录（如果不存在）
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            if (!parentDir.mkdirs()) {
+                throw new showException("创建目录失败: " + parentDir.getAbsolutePath());
+            }
+        }
+
         if (!file.exists()) {
             try {
                 file.createNewFile();

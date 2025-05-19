@@ -1,6 +1,7 @@
-package controller;
+package util;
 
 
+import controller.Impl.UserControllerImpl;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -14,15 +15,17 @@ public class DeepseekClassify {
 
     private static final String DEEPSEEK_API_URL_COMPLETIONS = "https://api.deepseek.com/chat/completions";
     private static final String DEEPSEEK_API_KEY = "sk-941ce5cde31c41cfaf9c5b7f4789b044";
-    private static final String CSV_FILE_PATH = "E:\\JAVA\\Software-project_4\\18\\Account-Book\\src\\main\\java\\model\\finance_data.csv";//自己的路径
 
-    public static void main(String[] args) {
-        DeepseekClassify test = new DeepseekClassify();
-        try {
-            test.processCSV(CSV_FILE_PATH);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private final UserControllerImpl userController;
+    private String CSV_FILE;
+
+    public DeepseekClassify(UserControllerImpl userController) {
+        this.userController = userController;
+        updateCsvFilePath();
+    }
+
+    private void updateCsvFilePath() {
+        CSV_FILE = userController.getCurrentUserFinanceFilePath();
     }
 
     public void processCSV(String csvFilePath) throws IOException {
