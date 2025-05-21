@@ -150,7 +150,7 @@ public class ImportUiImpl implements ImportUi {
                     }
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(contentPanel, "操作失败: " + ex.getMessage());
+                JOptionPane.showMessageDialog(contentPanel, "Operation failure: " + ex.getMessage());
             }
         };
     }
@@ -172,13 +172,13 @@ public class ImportUiImpl implements ImportUi {
     private boolean validateInput() {
         if (dateField.getText().isEmpty() || amountField.getText().isEmpty()
                 || descriptionField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(contentPanel, "必填字段不能为空");
+            JOptionPane.showMessageDialog(contentPanel, "The required fields cannot be blank");
             return false;
         }
         try {
             Double.parseDouble(amountField.getText());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(contentPanel, "金额格式错误");
+            JOptionPane.showMessageDialog(contentPanel, "The amount format is incorrect.");
             return false;
         }
         return true;
@@ -190,7 +190,7 @@ public class ImportUiImpl implements ImportUi {
             model.removeRow(selectedRow);
             controller.rewriteCSV(model);
         } else {
-            JOptionPane.showMessageDialog(contentPanel, "请先选择要删除的行");
+            JOptionPane.showMessageDialog(contentPanel, "Please select the rows to be deleted first");
         }
     }
 
