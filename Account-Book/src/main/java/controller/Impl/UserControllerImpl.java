@@ -118,7 +118,7 @@ public class UserControllerImpl {
         try {
             SettingControllerImpl.createUserFinanceFile(username);
         } catch (Exception e) {
-            System.err.println("财务文件创建失败: " + e.getMessage());
+            System.err.println("The migration of financial documents failed: " + e.getMessage());
             // 回滚用户注册
             users.removeIf(u -> u.getUsername().equals(username));
             saveUsersToFile();

@@ -46,10 +46,10 @@ public class SettingUiImpl {
         JPanel pathPanel = new JPanel(new BorderLayout(1, 1));
         pathField = new JTextField(SettingControllerImpl.getCurrentFinanceDirectory());
         pathField.setEditable(false);
-        chooseButton = new JButton("选择新目录");
+        chooseButton = new JButton("Select the new directory");
 
         JPanel labelFieldPanel = new JPanel(new BorderLayout(1, 1));
-        labelFieldPanel.add(new JLabel("当前财务数据存储目录:"), BorderLayout.WEST);
+        labelFieldPanel.add(new JLabel("The current financial data storage directory:"), BorderLayout.WEST);
         labelFieldPanel.add(pathField, BorderLayout.CENTER);
 
         pathPanel.add(labelFieldPanel, BorderLayout.CENTER);
@@ -60,7 +60,7 @@ public class SettingUiImpl {
 
     private JPanel createSaveButtonPanel() {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        saveButton = new JButton("保存设置");
+        saveButton = new JButton("Save settings");
         bottomPanel.add(saveButton);
         return bottomPanel;
     }
@@ -68,7 +68,7 @@ public class SettingUiImpl {
     private void setupButtonListeners() {
         chooseButton.addActionListener(e -> {
             JFileChooser dirChooser = new JFileChooser();
-            dirChooser.setDialogTitle("选择财务数据存储目录");
+            dirChooser.setDialogTitle("Select the financial data storage directory");
             dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
             // Set current directory as the starting point
@@ -89,13 +89,13 @@ public class SettingUiImpl {
             try {
                 SettingControllerImpl.setFinanceFileDirectory(newPath);
                 JOptionPane.showMessageDialog(contentPanel,
-                        "目录设置保存成功！",
-                        "成功",
+                        "The directory Settings have been saved successfully！",
+                        "Succeed",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (showException ex) {
                 JOptionPane.showMessageDialog(contentPanel,
-                        "目录设置保存失败: " + ex.getMessage(),
-                        "错误",
+                        "The directory Settings failed to be saved: " + ex.getMessage(),
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
                 // Reset to current directory if save fails
                 pathField.setText(SettingControllerImpl.getCurrentFinanceDirectory());
