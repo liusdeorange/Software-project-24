@@ -27,29 +27,57 @@ public class ImportUiImpl implements ImportUi {
         initializeModel();
     }
 
-    private void initializeModel() {
-        if (sharedModel == null) {
-            sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
-                @Override
-                public Class<?> getColumnClass(int column) {
-                    return column == 1 ? Double.class : String.class;
-                }
-            };
-
-            // 添加空行保护逻辑
-            List<Entry> initialData = controller.loadEntries();
-            if (!initialData.isEmpty()) {
-                for (Entry e : initialData) {
-                    sharedModel.addRow(new Object[]{e.getDate(), e.getAmount(),
-                            e.getCategory(), e.getDescription()});
-                }
-            } else {
-                // 添加默认空行防止异常
-                sharedModel.addRow(new Object[]{"", "", "", ""});
+//    private void initializeModel() {
+//        if (sharedModel == null) {
+//            sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
+//                @Override
+//                public Class<?> getColumnClass(int column) {
+//                    return column == 1 ? Double.class : String.class;
+//                }
+//            };
+//
+//            // 添加空行保护逻辑
+//            List<Entry> initialData = controller.loadEntries();
+//            if (!initialData.isEmpty()) {
+//                for (Entry e : initialData) {
+//                    sharedModel.addRow(new Object[]{e.getDate(), e.getAmount(),
+//                            e.getCategory(), e.getDescription()});
+//                }
+//            } else {
+//                // 添加默认空行防止异常
+//                sharedModel.addRow(new Object[]{"", 0, "", ""});
+//            }
+//        }
+//        this.model = sharedModel;
+//    }
+private void initializeModel() {
+    if (sharedModel == null) {
+        sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
+            @Override
+            public Class<?> getColumnClass(int column) {
+                return column == 1 ? Double.class : String.class;
             }
+
+            @Override
+            public Object getValueAt(int row, int column) {
+                Object value = super.getValueAt(row, column);
+                return value == null ? "" : value;
+            }
+        };
+
+        // 仅加载CSV中的真实数据，不添加空行
+        List<Entry> initialData = controller.loadEntries();
+        for (Entry e : initialData) {
+            sharedModel.addRow(new Object[]{
+                    e.getDate(),
+                    e.getAmount(),
+                    e.getCategory(),
+                    e.getDescription()
+            });
         }
-        this.model = sharedModel;
     }
+    this.model = sharedModel;
+}
 
     @Override
     public void ImportWindow() {

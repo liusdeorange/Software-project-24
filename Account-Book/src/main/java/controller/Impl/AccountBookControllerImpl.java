@@ -31,6 +31,7 @@ public class AccountBookControllerImpl {
     // 核心业务方法：搜索记录
     public Map<Date, List<Record>> searchRecords(String startInput, String endInput)
             throws ParseException, IOException, IllegalArgumentException {
+        updateCsvFilePath();
         ProcessedDates dates = processInputDates(startInput, endInput);
         List<Record> records = CSVUtils.readCSV(CSV_FILE);
         return filterRecords(records, dates.start(), dates.end());
@@ -119,6 +120,7 @@ public class AccountBookControllerImpl {
     // CSV数据处理工具类
     public static class CSVUtils {
         public static List<Record> readCSV(String path) throws IOException {
+
             try (BufferedReader br = new BufferedReader(new FileReader(path))) {
                 return br.lines()
                         .map(String::trim)
@@ -132,13 +134,12 @@ public class AccountBookControllerImpl {
         private static Record parseLine(String line) {
             String[] values = line.split(",", -1);
             if (values.length < 4) return null;
-
             try {
                 Date date = DATE_FORMAT.parse(values[0].trim());
                 double amount = parseAmount(values[1]);
                 return new Record(date, amount, values[2].trim(), values[3].trim());
             } catch (ParseException | NumberFormatException ex) {
-                System.err.println("CSV解析错误 - 跳过无效记录: " + line);
+                System.err.println("跳过无效记录: " + line);
                 return null;
             }
         }
