@@ -2,6 +2,7 @@ package view.Impl;
 
 import controller.Impl.AccountBookControllerImpl;
 import controller.Impl.UserControllerImpl;
+import view.AccountBookUi;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
