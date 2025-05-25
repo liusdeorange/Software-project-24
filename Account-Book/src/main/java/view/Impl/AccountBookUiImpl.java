@@ -23,7 +23,7 @@ import java.util.stream.IntStream;
  * @version 1.1.0
  * @since v1.0.0
  */
-public class AccountBookUiImpl {
+public class AccountBookUiImpl implements AccountBookUi{
     private JPanel contentPanel;
     private JScrollPane resultScrollPane;
     private JPanel resultPanel;
