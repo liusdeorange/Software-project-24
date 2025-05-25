@@ -20,7 +20,6 @@ The personal account book application developed based on Java and designed with 
 |---------------------|--------------------------|
 | **controller**     | Handle user operations and invoke business logic |
 | **model**          | Data entity class(user/csv/account)|
-| **test**           | Test code|
 | **util**           | Tool Class (Ai Classification /MD5)|
 | **view**           | User interface implementation       |
 | **resources**      | Static resources and configuration files|
