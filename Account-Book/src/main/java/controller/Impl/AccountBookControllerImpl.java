@@ -220,7 +220,7 @@ public class AccountBookControllerImpl implements AccountBookController {
          * @param line CSV line string
          * @return Parsed Record, or null on failure
          */
-        private static Record parseLine(String line) {
+        public static Record parseLine(String line) {
             String[] values = line.split(",", -1);
             if (values.length < 4) return null;
             try {
