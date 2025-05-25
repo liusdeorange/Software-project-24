@@ -19,13 +19,13 @@ import java.util.List;
  * @since v1.0.0
  */
 public class ImportUiImpl implements ImportUi {
-    private JPanel contentPanel;
-    private JTable table;
-    private DefaultTableModel model;
-    private JTextField dateField, amountField, categoryField, descriptionField;
+    public JPanel contentPanel;
+    public JTable table;
+    public DefaultTableModel model;
+    public JTextField dateField, amountField, categoryField, descriptionField;
 
-    private ImportControllerImpl controller;
-    private UserControllerImpl userController;
+    public ImportControllerImpl controller;
+    public UserControllerImpl userController;
 
     /**
      * Initializes the import UI with user controller and data model.
@@ -39,7 +39,7 @@ public class ImportUiImpl implements ImportUi {
         initializeModel();
     }
 
-private void initializeModel() {
+public void initializeModel() {
     if (sharedModel == null) {
         sharedModel = new DefaultTableModel(new Object[]{"Date", "Amount", "Category", "Description"}, 0) {
             @Override
@@ -140,7 +140,7 @@ private void initializeModel() {
         }
     }
 
-    private boolean hasValidData() {
+    public boolean hasValidData() {
         for (int i = 0; i < model.getRowCount(); i++) {
             Object date = model.getValueAt(i, 0);
             Object amount = model.getValueAt(i, 1);
@@ -158,7 +158,7 @@ private void initializeModel() {
      * @param label Button label to determine action
      * @return ActionListener for the specified button
      */
-    private ActionListener createActionListener(String label) {
+    public ActionListener createActionListener(String label) {
         return e -> {
             try {
                 switch (label) {
@@ -184,7 +184,7 @@ private void initializeModel() {
     /**
      * Adds a new financial entry from input fields to the table and CSV.
      */
-    private void addEntry() {
+    public void addEntry() {
         if (validateInput()) {
             Entry entry = new Entry(
                     dateField.getText(),
@@ -202,7 +202,7 @@ private void initializeModel() {
      * Validates input fields before adding a new entry.
      * @return True if input is valid, false otherwise
      */
-    private boolean validateInput() {
+    public boolean validateInput() {
         if (dateField.getText().isEmpty() || amountField.getText().isEmpty()
                 || descriptionField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(contentPanel, "The required fields cannot be blank");
@@ -220,7 +220,7 @@ private void initializeModel() {
     /**
      * Deletes selected entries from the table and updates the CSV.
      */
-    private void deleteEntry() {
+    public void deleteEntry() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
             model.removeRow(selectedRow);
@@ -230,12 +230,12 @@ private void initializeModel() {
         }
     }
 
-    private DefaultTableModel sharedModel;
+    public DefaultTableModel sharedModel;
 
     /**
      * Clears all input fields after adding an entry.
      */
-    private void clearFields() {
+    public void clearFields() {
         dateField.setText("");
         amountField.setText("");
         categoryField.setText("");

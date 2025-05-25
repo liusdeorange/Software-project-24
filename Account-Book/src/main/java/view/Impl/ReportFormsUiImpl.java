@@ -17,9 +17,9 @@ import org.jfree.chart.ChartPanel;
  * @since v1.0.0
  */
 public class ReportFormsUiImpl implements ReportFormsUi {
-    private JPanel contentPanel;
-    private ReportFormsController controller;
-    private UserControllerImpl userController;
+    public JPanel contentPanel;
+    public ReportFormsController controller;
+    public UserControllerImpl userController;
     /**
      * Initializes the report forms UI with user controller and chart generation logic.
      * @param contentPanel Parent container panel

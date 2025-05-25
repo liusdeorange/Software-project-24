@@ -19,10 +19,10 @@ import java.util.*;
  * @since v1.0.0
  */
 public class ReportFormsControllerImpl implements ReportFormsController {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-    private final UserControllerImpl userController;
-    private String CSV_FILE;
+    public final UserControllerImpl userController;
+    public String CSV_FILE;
     /**
      * Initializes the controller with user financial data.
      * @param userController User controller to fetch CSV file path
@@ -34,7 +34,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
     /**
      * Updates the CSV file path to the current user's data.
      */
-    private void updateCsvFilePath() {
+    public void updateCsvFilePath() {
         CSV_FILE = userController.getCurrentUserFinanceFilePath();
     }
     /**
@@ -77,7 +77,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @throws IOException If file read fails
      * @throws ParseException If date parsing fails
      */
-    private List<Record> readCSV(String filePath) throws IOException, ParseException {
+    public List<Record> readCSV(String filePath) throws IOException, ParseException {
         List<Record> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -101,7 +101,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param records List of financial records
      * @return Map of date to records
      */
-    private Map<Date, List<Record>> groupRecordsByDate(List<Record> records) {
+    public Map<Date, List<Record>> groupRecordsByDate(List<Record> records) {
         Map<Date, List<Record>> map = new TreeMap<>();
         for (Record r : records) {
             map.computeIfAbsent(r.date, k -> new ArrayList<>()).add(r);
@@ -113,7 +113,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param data Records grouped by date
      * @return Dataset with daily total expenses
      */
-    private DefaultCategoryDataset createCategoryDataset(Map<Date, List<Record>> data) {
+    public DefaultCategoryDataset createCategoryDataset(Map<Date, List<Record>> data) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Map.Entry<Date, List<Record>> entry : data.entrySet()) {
             double total = entry.getValue().stream().mapToDouble(r -> r.amount).sum();
@@ -126,7 +126,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param records List of financial records
      * @return Dataset with category-wise expense totals
      */
-    private DefaultPieDataset createPieDataset(List<Record> records) {
+    public DefaultPieDataset createPieDataset(List<Record> records) {
         Map<String, Double> map = new HashMap<>();
         for (Record r : records) {
             map.put(r.category, map.getOrDefault(r.category, 0.0) + r.amount);
@@ -142,7 +142,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param dataset Dataset with daily expense totals
      * @return Configured bar chart
      */
-    private JFreeChart createBarChart(DefaultCategoryDataset dataset) {
+    public JFreeChart createBarChart(DefaultCategoryDataset dataset) {
         return ChartFactory.createBarChart("Bar Chart of Daily Expenses", "Date", "Total Expenses",
                 dataset, PlotOrientation.VERTICAL, true, true, false);
     }
@@ -151,7 +151,7 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param dataset Dataset with daily expense totals
      * @return Configured line chart
      */
-    private JFreeChart createLineChart(DefaultCategoryDataset dataset) {
+    public JFreeChart createLineChart(DefaultCategoryDataset dataset) {
         return ChartFactory.createLineChart("Line Chart of Daily Expenses", "Date", "Total Expenses",
                 dataset, PlotOrientation.VERTICAL, true, true, false);
     }
@@ -160,13 +160,13 @@ public class ReportFormsControllerImpl implements ReportFormsController {
      * @param dataset Dataset with category expense totals
      * @return Configured pie chart
      */
-    private JFreeChart createPieChart(DefaultPieDataset dataset) {
+    public JFreeChart createPieChart(DefaultPieDataset dataset) {
         return ChartFactory.createPieChart("Pie Chart of Expense Categories", dataset, true, true, false);
     }
     /**
      * Data model for financial records.
      */
-    private static class Record {
+    public static class Record {
         Date date;
         double amount;
         String category;

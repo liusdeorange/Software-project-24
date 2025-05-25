@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
  */
 public class AccountBookControllerImpl implements AccountBookController {
 
-    private final UserControllerImpl userController;
-    private String CSV_FILE;
+    public final UserControllerImpl userController;
+    public String CSV_FILE;
     /**
      * Constructs the account book controller.
      * @param userController Instance of UserController to retrieve the user's financial data file path
@@ -35,11 +35,11 @@ public class AccountBookControllerImpl implements AccountBookController {
     /**
      * Updates the CSV file path to the current user's financial data path.
      */
-    private void updateCsvFilePath() {
+    public void updateCsvFilePath() {
         CSV_FILE = userController.getCurrentUserFinanceFilePath();
     }
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     /**
      * Initializes the date format (time zone: GMT+8, strict parsing mode).
      */
@@ -74,7 +74,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @throws ParseException For invalid date formats
      */
     // 日期处理管道
-    private ProcessedDates processInputDates(String start, String end) throws ParseException {
+    public ProcessedDates processInputDates(String start, String end) throws ParseException {
         String sanitizedStart = sanitizeDate(start);
         String sanitizedEnd = sanitizeDate(end);
         validateDateFormat(sanitizedStart, sanitizedEnd);
@@ -93,7 +93,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @return Mapped records grouped by date
      */
     // 数据过滤逻辑
-    private Map<Date, List<Record>> filterRecords(List<Record> records, Date start, Date end) {
+    public Map<Date, List<Record>> filterRecords(List<Record> records, Date start, Date end) {
         Map<Date, List<Record>> result = new TreeMap<>(Collections.reverseOrder());
         Date normStart = normalizeDate(start, true);
         Date normEnd = normalizeDate(end, false);
@@ -113,7 +113,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @return Sanitized date string
      */
     // 工具方法组
-    private String sanitizeDate(String input) {
+    public String sanitizeDate(String input) {
         return input.trim()
                 .replaceAll("[^\\d-]", "")
                 .replaceAll("-(?=.)", "-");
@@ -124,7 +124,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @param end End date string
      * @throws ParseException If date format does not match YYYY-MM-DD
      */
-    private void validateDateFormat(String start, String end) throws ParseException {
+    public void validateDateFormat(String start, String end) throws ParseException {
         if (!start.matches("\\d{4}-\\d{2}-\\d{2}") || !end.matches("\\d{4}-\\d{2}-\\d{2}")) {
             throw new ParseException("日期格式必须为YYYY-MM-DD", 0);
         }
@@ -135,7 +135,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @param end End date object
      * @throws IllegalArgumentException If start date is after end date
      */
-    private void validateDateOrder(Date start, Date end) {
+    public void validateDateOrder(Date start, Date end) {
         if (start.after(end)) {
             throw new IllegalArgumentException("开始日期不能晚于结束日期");
         }
@@ -146,7 +146,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @param isStart True for start of day (00:00:00), false for end of day (23:59:59)
      * @return Normalized date object
      */
-    private Date normalizeDate(Date date, boolean isStart) {
+    public Date normalizeDate(Date date, boolean isStart) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         if (isStart) {
@@ -167,7 +167,7 @@ public class AccountBookControllerImpl implements AccountBookController {
      * @param end End date (inclusive)
      * @return True if the date is within the range
      */
-    private boolean isDateInRange(Date date, Date start, Date end) {
+    public boolean isDateInRange(Date date, Date start, Date end) {
         return !date.before(start) && !date.after(end);
     }
     /**
@@ -237,7 +237,7 @@ public class AccountBookControllerImpl implements AccountBookController {
          * @param value Amount string (e.g., "¥1,234.56")
          * @return Parsed numeric amount
          */
-        private static double parseAmount(String value) {
+        public static double parseAmount(String value) {
             return Double.parseDouble(value.replaceAll("[^\\d.]", ""));
         }
     }

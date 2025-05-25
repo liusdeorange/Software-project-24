@@ -18,8 +18,8 @@ import java.util.List;
  */
 public class ImportControllerImpl {
 
-    private final UserControllerImpl userController;
-    private String CSV_FILE;
+    public final UserControllerImpl userController;
+    public String CSV_FILE;
 
     /**
      * Initializes the controller with user financial data path.
@@ -33,7 +33,7 @@ public class ImportControllerImpl {
     /**
      * Updates the CSV file path to the current user's finance file.
      */
-    private void updateCsvFilePath() {
+    public void updateCsvFilePath() {
         CSV_FILE = userController.getCurrentUserFinanceFilePath();
     }
 

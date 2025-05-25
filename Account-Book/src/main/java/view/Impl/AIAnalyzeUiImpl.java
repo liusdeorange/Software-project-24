@@ -16,11 +16,11 @@ import java.awt.event.ActionListener;
  * @since v1.0.0
  */
 public class AIAnalyzeUiImpl implements AIAnalyzeUi {
-    private JPanel contentPanel;
-    private UserControllerImpl userController;
-    private JTextArea resultTextArea; // 显示分析结果的文本域
-    private JLabel statusLabel;       // 状态提示标签
-    private AIAnalyzeControllerImpl aiController; // 分析控制器
+    public JPanel contentPanel;
+    public UserControllerImpl userController;
+    public JTextArea resultTextArea; // 显示分析结果的文本域
+    public JLabel statusLabel;       // 状态提示标签
+    public AIAnalyzeControllerImpl aiController; // 分析控制器
     /**
      * Initializes the AI analysis UI with necessary dependencies.
      * @param contentPanel Parent container panel

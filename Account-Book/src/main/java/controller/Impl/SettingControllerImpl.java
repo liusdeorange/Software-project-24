@@ -13,14 +13,14 @@ import java.util.Properties;
  * @since v1.0.0
  */
 public class SettingControllerImpl {
-    private static final String CONFIG_DIR = "config";
-    private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
-    private static final String FINANCE_FILE_DIR_KEY = "finance_file_directory";
-    private static final String DEFAULT_FINANCE_DIR = "user_finance_data";
-    private static String currentFinanceFileDirectory;
+    public static final String CONFIG_DIR = "config";
+    public static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
+    public static final String FINANCE_FILE_DIR_KEY = "finance_file_directory";
+    public static final String DEFAULT_FINANCE_DIR = "user_finance_data";
+    public static String currentFinanceFileDirectory;
 
-    private final UserControllerImpl userController;
-    private String CSV_FILE;
+    public final UserControllerImpl userController;
+    public String CSV_FILE;
 
     /**
      * Initializes the settings controller with user context.
@@ -44,7 +44,7 @@ public class SettingControllerImpl {
      * Initializes application settings (config directory, files, and defaults).
      * @throws showException For configuration initialization failures
      */
-    private static void initializeApplication() throws showException {
+    public static void initializeApplication() throws showException {
         // 1. 确保配置目录存在
         File configDir = new File(CONFIG_DIR);
         if (!configDir.exists() && !configDir.mkdirs()) {
@@ -69,7 +69,7 @@ public class SettingControllerImpl {
      * @param configFile Target configuration file
      * @throws showException For I/O errors during creation
      */
-    private static void createDefaultConfig(File configFile) throws showException {
+    public static void createDefaultConfig(File configFile) throws showException {
         try (OutputStream out = new FileOutputStream(configFile)) {
             Properties props = new Properties();
             props.setProperty(FINANCE_FILE_DIR_KEY, DEFAULT_FINANCE_DIR);
@@ -83,7 +83,7 @@ public class SettingControllerImpl {
      * Loads settings from the configuration file.
      * @throws showException For errors reading the config file
      */
-    private static void loadSettings() throws showException {
+    public static void loadSettings() throws showException {
         Properties props = new Properties();
         File externalConfig = new File(CONFIG_FILE);
 
@@ -105,7 +105,7 @@ public class SettingControllerImpl {
      * Saves current settings to the configuration file.
      * @throws showException For errors writing to the config file
      */
-    private static void saveSettings() throws showException {
+    public static void saveSettings() throws showException {
         Properties props = new Properties();
         props.setProperty(FINANCE_FILE_DIR_KEY, currentFinanceFileDirectory);
 

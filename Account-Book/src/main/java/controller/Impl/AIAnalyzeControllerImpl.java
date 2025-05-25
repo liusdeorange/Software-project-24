@@ -18,10 +18,10 @@ import net.sf.json.JSONObject;
  * @since v1.0.0
  */
 public class AIAnalyzeControllerImpl {
-    private static final String DEEPSEEK_API_URL_COMPLETIONS = "https://api.deepseek.com/chat/completions";
-    private static final String DEEPSEEK_API_KEY = "sk-941ce5cde31c41cfaf9c5b7f4789b044"; // 替换为你的API Key
+    public static final String DEEPSEEK_API_URL_COMPLETIONS = "https://api.deepseek.com/chat/completions";
+    public static final String DEEPSEEK_API_KEY = "sk-941ce5cde31c41cfaf9c5b7f4789b044"; // 替换为你的API Key
 
-    private final UserControllerImpl userController;
+    public final UserControllerImpl userController;
     public String CSV_FILE;
     /**
      * Initializes the AI analysis controller with the user's financial data path.
@@ -34,7 +34,7 @@ public class AIAnalyzeControllerImpl {
     /**
      * Updates the user's financial data file path.
      */
-    private void updateCsvFilePath() {
+    public void updateCsvFilePath() {
         CSV_FILE = userController.getCurrentUserFinanceFilePath();
     }
     /**
@@ -107,7 +107,7 @@ public class AIAnalyzeControllerImpl {
      * @param categoryExpenses Map of category to expense amounts
      * @return Total expense amount
      */
-    private double getTotalExpenses(Map<String, Double> categoryExpenses) {
+    public double getTotalExpenses(Map<String, Double> categoryExpenses) {
         return categoryExpenses.values().stream().mapToDouble(Double::doubleValue).sum();
     }
     /**
@@ -117,7 +117,7 @@ public class AIAnalyzeControllerImpl {
      * @return English text of AI-generated budget suggestions
      * @throws IOException Thrown on API request failures
      */
-    private String getBudgetSuggestionsFromDeepSeek(Map<String, Double> categoryExpenses, String month) throws IOException {
+    public String getBudgetSuggestionsFromDeepSeek(Map<String, Double> categoryExpenses, String month) throws IOException {
         StringBuilder description = new StringBuilder();
 
         // 检查月份是否为2月（中国新年）或9月（中秋节）
@@ -197,7 +197,7 @@ public class AIAnalyzeControllerImpl {
      * @param connection HTTPS connection instance
      * @return Original SSLSocketFactory
      */
-    private SSLSocketFactory trustAllHosts(HttpsURLConnection connection) {
+    public SSLSocketFactory trustAllHosts(HttpsURLConnection connection) {
         SSLSocketFactory oldFactory = connection.getSSLSocketFactory();
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
@@ -212,7 +212,7 @@ public class AIAnalyzeControllerImpl {
     /**
      * Custom trust manager for ignoring certificate validation.
      */
-    private TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+    public TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
             return new java.security.cert.X509Certificate[]{};
         }
@@ -226,7 +226,7 @@ public class AIAnalyzeControllerImpl {
     /**
      * Hostname verifier that always returns true.
      */
-    private HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+    public HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }

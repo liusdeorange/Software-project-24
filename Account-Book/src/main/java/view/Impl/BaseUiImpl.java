@@ -18,12 +18,12 @@ import java.util.Map;
  * @since v1.0.0
  */
 public class BaseUiImpl implements BaseUi {
-    private JFrame frame;
-    private JPanel sidebar;
-    private JPanel contentPanel;
-    private final Map<String, Runnable> viewMap = new HashMap<>();
-    private UserControllerImpl userController;
-    private JLabel userStatusLabel;
+    public JFrame frame;
+    public JPanel sidebar;
+    public JPanel contentPanel;
+    public final Map<String, Runnable> viewMap = new HashMap<>();
+    public UserControllerImpl userController;
+    public JLabel userStatusLabel;
     /**
      * Initializes the base UI with user authentication logic.
      */
@@ -64,7 +64,7 @@ public class BaseUiImpl implements BaseUi {
     /**
      * Shows the login view with username/password input and authentication logic.
      */
-private void showLoginView() {
+public void showLoginView() {
     contentPanel.removeAll();
 
     JPanel loginPanel = new JPanel(new GridBagLayout());
@@ -183,7 +183,7 @@ private void showLoginView() {
     /**
      * Shows the user registration view with form validation and account creation.
      */
-    private void showRegisterView() {
+    public void showRegisterView() {
         contentPanel.removeAll();
 
         JPanel registerPanel = new JPanel(new GridBagLayout());
@@ -239,6 +239,12 @@ private void showLoginView() {
             boolean gender = genderCombo.getSelectedIndex() == 0; // 0=男, 1=女
             int age = (Integer) ageSpinner.getValue();
 
+            // 检查用户名或密码是否为空
+            if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "The username and password cannot be empty", "Registration failed", JOptionPane.ERROR_MESSAGE);
+                return;  // 终止当前操作
+            }
+
             if (userController.register(username, password, gender, age)) {
                 JOptionPane.showMessageDialog(frame, "Registration successful. Please log in", "Registration successful", JOptionPane.INFORMATION_MESSAGE);
                 showLoginView();
@@ -261,7 +267,7 @@ private void showLoginView() {
     /**
      * Creates the sidebar navigation panel with view buttons (Account Book, Reports, etc.).
      */
-    private void createSidebar() {
+    public void createSidebar() {
         sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(Color.LIGHT_GRAY);
@@ -315,7 +321,7 @@ private void showLoginView() {
     /**
      * Initializes view mappings for sidebar buttons to corresponding UI components.
      */
-    private void initViewMap() {
+    public void initViewMap() {
         viewMap.put("Account Book", () -> {
             if (!userController.isLoggedIn()) {
                 JOptionPane.showMessageDialog(frame, "Please log in first.", "Not logged in", JOptionPane.WARNING_MESSAGE);
@@ -375,8 +381,8 @@ private void showLoginView() {
     /**
      * Listener for sidebar buttons to switch between different application views.
      */
-    private class SidebarButtonListener implements ActionListener {
-        private final String buttonLabel;
+    public class SidebarButtonListener implements ActionListener {
+        public final String buttonLabel;
 
         public SidebarButtonListener(String label) {
             this.buttonLabel = label;

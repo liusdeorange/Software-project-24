@@ -24,20 +24,20 @@ import java.util.stream.IntStream;
  * @version 1.1.0
  * @since v1.0.0
  */
-public class AccountBookUiImpl implements AccountBookUi{
-    private JPanel contentPanel;
-    private JScrollPane resultScrollPane;
-    private JPanel resultPanel;
+public class AccountBookUiImpl implements AccountBookUi {
+    public JPanel contentPanel;
+    public JScrollPane resultScrollPane;
+    public JPanel resultPanel;
 
-    private JPanel totalPanel;
-    private JLabel totalLabel;
+    public JPanel totalPanel;
+    public JLabel totalLabel;
 
-    private AccountBookControllerImpl controller;
-    private UserControllerImpl userController;
+    public AccountBookControllerImpl controller;
+    public UserControllerImpl userController;
 
     // 日期选择组件
-    private JComboBox<Integer> startYearCombo, startMonthCombo, startDayCombo;
-    private JComboBox<Integer> endYearCombo, endMonthCombo, endDayCombo;
+    public JComboBox<Integer> startYearCombo, startMonthCombo, startDayCombo;
+    public JComboBox<Integer> endYearCombo, endMonthCombo, endDayCombo;
 
     /**
      * Initializes the UI with the main content panel and user controller.
@@ -72,7 +72,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * Creates a control panel with date selectors and a search button.
      * @return Configured control panel component
      */
-    private JPanel createControlPanel() {
+    public JPanel createControlPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -109,7 +109,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * @param isStartDate True for start date selector, false for end date
      * @return Panel with year/month/day combo boxes
      */
-    private JPanel createDateSelectorPanel(boolean isStartDate) {
+    public JPanel createDateSelectorPanel(boolean isStartDate) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
         // 年份选择（当前年前后各5年）
@@ -168,7 +168,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * @param year Selected year
      * @param month Selected month (1-12)
      */
-    private void updateDayCombo(JComboBox<Integer> dayCombo, int year, int month) {
+    public void updateDayCombo(JComboBox<Integer> dayCombo, int year, int month) {
         dayCombo.removeAllItems();
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, year);
@@ -195,7 +195,7 @@ public class AccountBookUiImpl implements AccountBookUi{
         return String.format("%04d-%02d-%02d", year, month, day);
     }
 
-    private void setDateComponents(JComboBox<Integer> yearCombo,
+    public void setDateComponents(JComboBox<Integer> yearCombo,
                                    JComboBox<Integer> monthCombo,
                                    JComboBox<Integer> dayCombo,
                                    Date date) {
@@ -213,7 +213,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * @param startInput Start date string (yyyy-MM-dd)
      * @param endInput End date string (yyyy-MM-dd)
      */
-    private void handleSearch(String startInput, String endInput) {
+    public void handleSearch(String startInput, String endInput) {
         try {
             if (startInput.isEmpty() || endInput.isEmpty()) {
                 throw new ParseException("The date cannot be empty", 0);
@@ -238,7 +238,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * Updates the result panel with filtered financial records.
      * @param data Filtered records grouped by date
      */
-    private void updateResultPanel(Map<Date, List<AccountBookControllerImpl.Record>> data) {
+    public void updateResultPanel(Map<Date, List<AccountBookControllerImpl.Record>> data) {
         resultPanel.removeAll();
         if (data.isEmpty()) {
             resultPanel.add(new JLabel("No relevant records were found"));
@@ -264,7 +264,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * @param records List of records for the date
      * @return Configured date panel component
      */
-    private JPanel createDatePanel(Date date, List<AccountBookControllerImpl.Record> records) {
+    public JPanel createDatePanel(Date date, List<AccountBookControllerImpl.Record> records) {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
 
         // ================= 动态尺寸计算 =================
@@ -329,7 +329,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * @param records List of records to populate the table
      * @return Configured JTable component
      */
-    private JTable createSmartTable(List<AccountBookControllerImpl.Record> records) {
+    public JTable createSmartTable(List<AccountBookControllerImpl.Record> records) {
         DefaultTableModel model = new DefaultTableModel(
                 new Object[]{"Amount", "Category", "Description"}, 0) {
             @Override
@@ -409,7 +409,7 @@ public class AccountBookUiImpl implements AccountBookUi{
     /**
      * Automatically loads initial data for the current month.
      */
-    private void autoLoadInitialData() {
+    public void autoLoadInitialData() {
         try {
             // 设置开始日期为当月第一天
             Calendar firstCal = Calendar.getInstance();
@@ -425,14 +425,14 @@ public class AccountBookUiImpl implements AccountBookUi{
         }
     }
 
-    private void initializeResultPanel() {
+    public void initializeResultPanel() {
         resultPanel = new JPanel();
         resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         resultScrollPane = new JScrollPane(resultPanel);
         resultScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
     }
 
-    private void addComponent(JPanel panel, Component comp,
+    public void addComponent(JPanel panel, Component comp,
                               GridBagConstraints gbc, int x, int y) {
         gbc.gridx = x;
         gbc.gridy = y;
@@ -443,7 +443,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      *Update total display panel (New)
      *@param total calculated total amount
      */
-    private void updateTotalDisplay(double total) {
+    public void updateTotalDisplay(double total) {
         String formattedTotal = String.format("¥%.2f", total);
         String htmlText = "<html><b style='color:#D32F2F; font-size:14px;'>"
                 + "Total consumption：</b><span style='font-size:16px;'>%s</span></html>";
@@ -461,7 +461,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      *@param records list of current day records
      *@return jLabel component with style
      */
-    private JLabel createTotalLabel(List<AccountBookControllerImpl.Record> records) {
+    public JLabel createTotalLabel(List<AccountBookControllerImpl.Record> records) {
         double total = records.stream()
                 .mapToDouble(AccountBookControllerImpl.Record::amount)
                 .sum();
@@ -480,7 +480,7 @@ public class AccountBookUiImpl implements AccountBookUi{
      * Displays an error message dialog.
      * @param message Error message content
      */
-    private void showError(String message) {
+    public void showError(String message) {
         JOptionPane.showMessageDialog(contentPanel, message,
                 "System prompt", JOptionPane.ERROR_MESSAGE);
     }

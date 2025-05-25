@@ -5,6 +5,7 @@ import controller.Impl.SettingControllerImpl;
 import controller.Impl.UserControllerImpl;
 import controller.Impl.showException;
 import model.UserModel;
+import view.SettingUi;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,20 +17,20 @@ import java.io.File;
  * @version 1.0.0
  * @since v1.0.0
  */
-public class SettingUiImpl {
+public class SettingUiImpl implements SettingUi {
 
-    private final JPanel contentPanel;
-    private JTextField pathField;
-    private JButton chooseButton;
-    private JButton saveButton;
-    private JPasswordField passwordField;
-    private JRadioButton maleRadio;
-    private JRadioButton femaleRadio;
-    private JComboBox<Integer> ageComboBox;
-    private final ButtonGroup genderGroup = new ButtonGroup();
+    public final JPanel contentPanel;
+    public JTextField pathField;
+    public JButton chooseButton;
+    public JButton saveButton;
+    public JPasswordField passwordField;
+    public JRadioButton maleRadio;
+    public JRadioButton femaleRadio;
+    public JComboBox<Integer> ageComboBox;
+    public final ButtonGroup genderGroup = new ButtonGroup();
 
-    private SettingControllerImpl controller;
-    private UserControllerImpl userController;
+    public SettingControllerImpl controller;
+    public UserControllerImpl userController;
     /**
      * Initializes the settings UI with user controller and configuration logic.
      * @param contentPanel Parent container panel
@@ -55,7 +56,7 @@ public class SettingUiImpl {
         setupButtonListeners();
     }
 
-    private JPanel createMainSettingPanel() {
+    public JPanel createMainSettingPanel() {
         JPanel settingPanel = new JPanel(new BorderLayout());
         settingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -85,7 +86,7 @@ public class SettingUiImpl {
      * @return Configured directory path panel
      */
     // 创建文件路径面板
-    private JPanel createFilePathPanel() {
+    public JPanel createFilePathPanel() {
         JPanel pathPanel = new JPanel(new BorderLayout(1, 1));
         pathField = new JTextField(SettingControllerImpl.getCurrentFinanceDirectory());
         pathField.setEditable(false);
@@ -105,7 +106,7 @@ public class SettingUiImpl {
      * @return Configured user info panel
      */
     // 创建用户信息设置面板（密码、性别、年龄）
-    private JPanel createUserSettingPanel() {
+    public JPanel createUserSettingPanel() {
         JPanel userPanel = new JPanel(new GridBagLayout());
         userPanel.setBorder(BorderFactory.createTitledBorder("UserInfo Settings")); // 添加边框标题
 
@@ -169,7 +170,7 @@ public class SettingUiImpl {
      * Creates the save button panel for applying settings.
      * @return Panel containing the save button
      */
-    private JPanel createSaveButtonPanel() {
+    public JPanel createSaveButtonPanel() {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         saveButton = new JButton("Save settings");
         bottomPanel.add(saveButton);
@@ -178,7 +179,7 @@ public class SettingUiImpl {
     /**
      * Sets up action listeners for directory selection and save operations.
      */
-    private void setupButtonListeners() {
+    public void setupButtonListeners() {
         chooseButton.addActionListener(e -> {
             JFileChooser dirChooser = new JFileChooser();
             dirChooser.setDialogTitle("Select the financial data storage directory");

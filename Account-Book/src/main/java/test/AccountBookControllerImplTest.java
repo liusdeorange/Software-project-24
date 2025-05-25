@@ -1,113 +1,103 @@
 package test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.text.ParseException;
-
 import controller.Impl.AccountBookControllerImpl;
 import controller.Impl.UserControllerImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.*;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AccountBookControllerImplTest {
 
     private AccountBookControllerImpl controller;
-    private UserControllerImpl mockUserController;
+    private static final String TEST_CSV_PATH = "testUser_finance.csv";
 
-    // 测试用临时CSV文件路径
-    private static final String TEST_CSV_PATH = "src/test/resources/test_finance.csv";
+    // 创建一个模拟的 UserControllerImpl 类
+    static class MockUserControllerImpl extends UserControllerImpl {
+        @Override
+        public String getCurrentUserFinanceFilePath() {
+            return TEST_CSV_PATH;
+        }
+    }
 
-    @Before
-    public void setUp() throws Exception {
-        // 初始化模拟UserController
-        mockUserController = mock(UserControllerImpl.class);
-        when(mockUserController.getCurrentUserFinanceFilePath()).thenReturn(TEST_CSV_PATH);
+    @BeforeAll
+    static void setupCSV() throws IOException {
+        // 测试CSV文件
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(TEST_CSV_PATH))) {
+            writer.write("2024-04-01,1000,Salary,Monthly Salary\n");
+            writer.write("2024-04-15,-200,Food,Lunch\n");
+            writer.write("2024-05-01,500,Gift,Birthday Gift\n");
+        }
+    }
 
-        // 创建测试用CSV文件
-        createTestCSV();
-
-        // 初始化Controller并设置日期格式
-        controller = new AccountBookControllerImpl(mockUserController);
+    @BeforeEach
+    void setUp() {
+        controller = new AccountBookControllerImpl(new MockUserControllerImpl());
         controller.initializeDateFormat();
     }
 
-    /**
-     * 测试无效日期格式的异常
-     */
-    @Test(expected = ParseException.class)
-    public void testSearchRecords_InvalidDateFormat() throws Exception {
-        controller.searchRecords("2023/01/01", "2023-01-03");
+    @AfterAll
+    static void cleanUp() {
+        new File(TEST_CSV_PATH).delete();
     }
 
-    /**
-     * 测试开始日期晚于结束日期的异常
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testSearchRecords_InvalidDateOrder() throws Exception {
-        controller.searchRecords("2023-01-03", "2023-01-01");
-    }
-
-    /**
-     * 通过反射测试私有方法sanitizeDate
-     */
     @Test
-    public void testSanitizeDate() throws Exception {
-        Method method = AccountBookControllerImpl.class
-                .getDeclaredMethod("sanitizeDate", String.class);
-        method.setAccessible(true);
+    @DisplayName("测试搜索记录：正常日期范围")
+    void testSearchRecordsValidRange() throws Exception {
+        Map<Date, List<AccountBookControllerImpl.Record>> result =
+                controller.searchRecords("2024-04-01", "2024-04-30");
 
-        String input = " 2023-01-01 ";
-        String output = (String) method.invoke(controller, input);
-        assertEquals("2023-01-01", output);
+        // 应该包含两个记录（4月1日和4月15日）
+        assertEquals(2, result.values().stream().mapToInt(List::size).sum());
     }
 
-    /**
-     * 测试CSV文件解析逻辑
-     */
     @Test
-    public void testCSVUtils_ParseValidLine() {
-        String line = "2023-01-01, ¥100.50, Food, Lunch";
-        Record record = AccountBookControllerImpl.CSVUtils.parseLine(line);
+    @DisplayName("测试搜索记录：无匹配记录")
+    void testSearchRecordsNoMatch() throws Exception {
+        Map<Date, List<AccountBookControllerImpl.Record>> result =
+                controller.searchRecords("2023-01-01", "2023-01-31");
 
-        assertNotNull(record);
-        assertEquals("Food", ((AccountBookControllerImpl.Record) record).category());
-        assertEquals(100.50, ((AccountBookControllerImpl.Record) record).amount(), 0.001);
+        // 应该为空
+        assertTrue(result.isEmpty());
     }
 
-    /**
-     * 测试CSV解析跳过无效记录
-     */
     @Test
-    public void testCSVUtils_SkipInvalidLine() {
-        String line = "InvalidDate, ABC, Food, Lunch";
-        Record record = AccountBookControllerImpl.CSVUtils.parseLine(line);
-        assertNull(record);
+    @DisplayName("测试非法日期格式")
+    void testInvalidDateFormat() {
+        assertThrows(ParseException.class, () -> {
+            controller.searchRecords("2024/04/01", "2024/04/30");
+        });
     }
 
-    //-------------------------------------------
-    // 辅助方法
-    //-------------------------------------------
+    @Test
+    @DisplayName("测试开始日期晚于结束日期")
+    void testStartDateAfterEndDate() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            controller.searchRecords("2024-05-01", "2024-04-01");
+        });
+    }
 
-    /**
-     * 创建测试用CSV文件内容
-     */
-    private void createTestCSV() throws IOException {
-        File file = new File(TEST_CSV_PATH);
-        file.getParentFile().mkdirs();
+    @Test
+    @DisplayName("测试日期格式化方法")
+    void testFormatDate() throws ParseException {
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse("2024-04-01");
+        String formatted = controller.formatDate(date);
+        assertEquals("2024-04-01", formatted);
+    }
 
-        try (FileWriter writer = new FileWriter(file)) {
-            writer.write("2023-01-01, 100.0, Food, Breakfast\n");
-            writer.write("2023-01-01, 200.0, Transport, Taxi\n");
-            writer.write("2023-01-03, 50.0, Food, Coffee\n");
-            writer.write("InvalidLine\n"); // 测试跳过无效行
+    @Test
+    @DisplayName("测试CSV解析失败行被跳过")
+    void testInvalidCSVLineIgnored() throws IOException {
+        // 加入一行无效数据
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(TEST_CSV_PATH, true))) {
+            writer.write("InvalidLine\n");
         }
+
+        // 无异常，且仍然能解析原始三条有效记录
+        var records = AccountBookControllerImpl.CSVUtils.readCSV(TEST_CSV_PATH);
+        assertEquals(3, records.size());  // 依然只包含三条有效记录
     }
 }
