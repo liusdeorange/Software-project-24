@@ -1,10 +1,10 @@
 package controller.Impl;
 
-import controller.SettingController;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
+
 /**
  * Settings controller for managing application configurations and user finance data paths.
  *
@@ -12,7 +12,7 @@ import java.util.Properties;
  * @version 1.0.0
  * @since v1.0.0
  */
-public class SettingControllerImpl implements SettingController {
+public class SettingControllerImpl {
     private static final String CONFIG_DIR = "config";
     private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
     private static final String FINANCE_FILE_DIR_KEY = "finance_file_directory";
@@ -21,6 +21,7 @@ public class SettingControllerImpl implements SettingController {
 
     private final UserControllerImpl userController;
     private String CSV_FILE;
+
     /**
      * Initializes the settings controller with user context.
      * @param userController User controller instance
@@ -38,6 +39,7 @@ public class SettingControllerImpl implements SettingController {
             System.err.println("初始化失败: " + e.getMessage());
         }
     }
+
     /**
      * Initializes application settings (config directory, files, and defaults).
      * @throws showException For configuration initialization failures
@@ -61,6 +63,7 @@ public class SettingControllerImpl implements SettingController {
         // 4. 确保财务数据目录存在
         new File(currentFinanceFileDirectory).mkdirs();
     }
+
     /**
      * Creates default configuration file with predefined settings.
      * @param configFile Target configuration file
@@ -75,6 +78,7 @@ public class SettingControllerImpl implements SettingController {
             throw new showException("无法创建默认配置文件: " + e.getMessage(), e);
         }
     }
+
     /**
      * Loads settings from the configuration file.
      * @throws showException For errors reading the config file
@@ -96,6 +100,7 @@ public class SettingControllerImpl implements SettingController {
             currentFinanceFileDirectory = DEFAULT_FINANCE_DIR;
         }
     }
+
     /**
      * Saves current settings to the configuration file.
      * @throws showException For errors writing to the config file
@@ -110,6 +115,7 @@ public class SettingControllerImpl implements SettingController {
             throw new showException("保存设置时出错: " + e.getMessage(), e);
         }
     }
+
     /**
      * Gets the file path for a user's finance data.
      * @param username User identifier
@@ -118,6 +124,7 @@ public class SettingControllerImpl implements SettingController {
     public static String getFinanceFilePath(String username) {
         return currentFinanceFileDirectory + File.separator + username + "_finance.csv";
     }
+
     /**
      * Sets the finance data directory and migrates existing files.
      * @param newDirectory New directory path for finance data
@@ -151,6 +158,7 @@ public class SettingControllerImpl implements SettingController {
         currentFinanceFileDirectory = newDirectory;
         saveSettings();
     }
+
     /**
      * Gets the current finance data directory.
      * @return Current directory path for finance data
@@ -158,12 +166,12 @@ public class SettingControllerImpl implements SettingController {
     public static String getCurrentFinanceDirectory() {
         return currentFinanceFileDirectory;
     }
+
     /**
      * Creates a new finance data file for a user with default headers.
      * @param username User identifier
      * @throws showException For file creation or header writing failures
      */
-    // 创建用户财务文件
     public static void createUserFinanceFile(String username) throws showException {
         String filePath = getFinanceFilePath(username);
         File file = new File(filePath);

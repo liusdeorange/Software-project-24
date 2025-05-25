@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
+
 /**
  * UI implementation for importing/exporting financial data and managing entries in a table.
  *
@@ -25,6 +26,7 @@ public class ImportUiImpl implements ImportUi {
 
     private ImportControllerImpl controller;
     private UserControllerImpl userController;
+
     /**
      * Initializes the import UI with user controller and data model.
      * @param contentPanel Parent container panel
@@ -65,6 +67,7 @@ private void initializeModel() {
     }
     this.model = sharedModel;
 }
+
     /**
      * Displays the import/export window with data table and input fields.
      */
@@ -126,10 +129,10 @@ private void initializeModel() {
         contentPanel.add(inputPanel, BorderLayout.NORTH);
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
+
     /**
      * Saves table changes to CSV automatically when data is updated.
      */
-    // ImportUiImpl.java
     public void autoSave() {
         // 增加有效性检查
         if (model.getRowCount() > 0 && hasValidData()) {
@@ -177,6 +180,7 @@ private void initializeModel() {
             }
         };
     }
+
     /**
      * Adds a new financial entry from input fields to the table and CSV.
      */
@@ -193,6 +197,7 @@ private void initializeModel() {
             clearFields();
         }
     }
+
     /**
      * Validates input fields before adding a new entry.
      * @return True if input is valid, false otherwise
@@ -211,6 +216,7 @@ private void initializeModel() {
         }
         return true;
     }
+
     /**
      * Deletes selected entries from the table and updates the CSV.
      */
@@ -224,7 +230,8 @@ private void initializeModel() {
         }
     }
 
-    private static DefaultTableModel sharedModel;
+    private DefaultTableModel sharedModel;
+
     /**
      * Clears all input fields after adding an entry.
      */
