@@ -12,7 +12,8 @@ The personal account book application developed based on Java and designed with 
 - ⚙️ Account Settings (password, gender, age)
 
 ## Project structure
-![image](https://github.com/user-attachments/assets/c899b5b9-e986-4846-8201-66f88b37bb93)
+![屏幕截图 2025-05-26 124138](https://github.com/user-attachments/assets/6830b481-c921-428e-bb69-330dbb250cbe)
+
 
 
 ### 🗂 Core Module Description
@@ -21,6 +22,7 @@ The personal account book application developed based on Java and designed with 
 |---------------------|--------------------------|
 | **controller**     | Handle user operations and invoke business logic |
 | **model**          | Data entity class(user/csv/account)|
+| **test**           | Test Code|
 | **util**           | Tool Class (Ai Classification /MD5)|
 | **view**           | User interface implementation       |
 | **resources**      | Static resources and configuration files|
@@ -35,6 +37,6 @@ The personal account book application developed based on Java and designed with 
 - Maven 3.9+
 
 ### Instructions for Use
-#### 1Clone project[Account-Book](https://github.com/liusdeorange/Software-project-24/tree/main/Account-Book)
+#### 1.Clone project [Account-Book](https://github.com/liusdeorange/Software-project-24/tree/main/Account-Book)
 #### 2.Build the project using maven
 #### 3.Compile and run directly**main.java**<ins> (Account-Book/src/main/java/main.java)</ins>
